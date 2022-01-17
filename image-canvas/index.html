@@ -18,6 +18,39 @@
   </div>
   
   <script>
+    const dotSize = 8;
+    var rect={
+      x1: 20,
+      y1: 20,
+      x2: 300,
+      y2: 200
+    }
+
+
+    function drawPointRect(ctx, x, y, size) {
+      ctx.rect(
+          x - dotSize / 2,
+          y - dotSize / 2,
+          dotSize,
+          dotSize
+      );
+      ctx.stroke();
+    }
+
+    function drawBoundingBox(ctx, rect) {
+      // draw bounding box rectangle
+      ctx.strokeStyle = 'yellow';
+      ctx.beginPath();
+      ctx.rect(rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1);
+      ctx.stroke();
+
+      // draw corner boxes
+      drawPointRect(ctx, rect.x1, rect.y1, dotSize);
+      drawPointRect(ctx, rect.x1, rect.y2, dotSize);
+      drawPointRect(ctx, rect.x2, rect.y1, dotSize);
+      drawPointRect(ctx, rect.x2, rect.y2, dotSize);
+    }
+
     function handleFileSelect(evt) {
       var files = evt.target.files; // FileList object
   
@@ -42,9 +75,11 @@
           img.onload = function() {
             const canvas = document.getElementById('canvas');
 
+            // clear canvas
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // reset canvas size
             console.log('image size: ', img.naturalWidth, img.naturalHeight)
             canvas.width = img.naturalWidth;
             canvas.height = img.naturalHeight;
@@ -52,11 +87,7 @@
             // draw image html element onto canvas, keep image original size
             ctx.drawImage(img, 0, 0);
 
-            // draw rectangle bounding box
-            ctx.strokeStyle = 'yellow';
-            ctx.beginPath();
-            ctx.rect(20, 20, img.naturalWidth - 40, img.naturalHeight - 40);
-            ctx.stroke();
+            drawBoundingBox(ctx, rect);
           };
         };
       })(f);
