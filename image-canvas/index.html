@@ -23,7 +23,7 @@
     // set up canvas event handlers
     $("#canvas").mousedown(function(e) { handleMouseDown(e); });
     $("#canvas").mousemove(function(e) { handleMouseMove(e); });
-    //$("#canvas").mouseup(function(e) { handleMouseUp(e);} );
+    $("#canvas").mouseup(function(e) { handleMouseUp(e);} );
     //$("#canvas").mouseout(function(e) { handleMouseOut(e); });
 
     // track coordinates
@@ -168,6 +168,20 @@
     
       draw();
     };
+
+    function handleMouseUp(e){
+      // tell the browser we're handling this event
+      e.preventDefault();
+      e.stopPropagation();
+    
+      mouseX = parseInt(e.clientX - offsetX);
+      mouseY = parseInt(e.clientY - offsetY);
+    
+      draw();
+    
+      // Put your mouseup stuff here
+      isDown = false;
+    }
 
     function draw() {
       const canvas = document.getElementById('canvas');
