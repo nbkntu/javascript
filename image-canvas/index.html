@@ -183,6 +183,18 @@
       isDown = false;
     }
 
+    function handleMouseOut(e){
+      // tell the browser we're handling this event
+      e.preventDefault();
+      e.stopPropagation();
+
+      mouseX = parseInt(e.clientX - offsetX);
+      mouseY = parseInt(e.clientY - offsetY);
+
+      // Put your mouseOut stuff here
+      isDown = false;
+    }
+
     function draw() {
       const canvas = document.getElementById('canvas');
 
