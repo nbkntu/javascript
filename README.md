@@ -6,3 +6,5 @@ Drag points to edit the polygon shape.
 
 # image-canvas
 Load image from local drive and display in canvas.
+Draw rectangle bounding box and make it resizable.
+
