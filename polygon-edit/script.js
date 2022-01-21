@@ -16,12 +16,11 @@ window.onscroll=function(e){ reOffset(); }
 window.onresize=function(e){ reOffset(); }
 
 var isDown=false;
+var isRightClick = false;
 var polyPointId;
 
 var poly={
-  x: 0,
-  y: 0,
-  points:[{x:50,y:50}, {x:75,y:25}, {x:100,y:50}, {x:75,y:125}],
+  points:[ {x:175, y:75}, {x:250, y:150}, {x:175, y:225}, {x:100, y:180} ],
 }
 
 const dotSize = 8;
@@ -32,15 +31,51 @@ const dotSize = 8;
 
 draw();
 
-$("#canvas").mousedown(function(e){handleMouseDown(e);});
-$("#canvas").mousemove(function(e){handleMouseMove(e);});
-$("#canvas").mouseup(function(e){handleMouseUp(e);});
-$("#canvas").mouseout(function(e){handleMouseOut(e);});
+$("#canvas").mousedown(function(e) { handleMouseDown(e); });
+$("#canvas").mousemove(function(e) { handleMouseMove(e); });
+$("#canvas").mouseup(function(e) { handleMouseUp(e); });
+$("#canvas").mouseout(function(e) { handleMouseOut(e); });
+// disable right-click showing context menu
+$("#canvas").contextmenu(function(e) { e.preventDefault(); return false; });
 
 
-function draw(){
+function removePoint(poly, pointIndex) {
+  if (poly.points.length <= 3) {
+    return;
+  }
+
+  console.log(poly.points);
+  console.log(pointIndex);
+
+  poly.points.splice(pointIndex, 1);
+
+  console.log(poly.points);
+}
+
+function addPoint(poly, x, y) {
+  insertIndex = -1;
+  minSquareDistance = -1;
+  for (i = 0; i < poly.points.length; i++) {
+    i1 = (i + 1) % poly.points.length;
+    sqDist = Math.pow(x - poly.points[i].x, 2) + Math.pow(y - poly.points[i].y, 2)
+        + Math.pow(x - poly.points[i1].x, 2) + Math.pow(y - poly.points[i1].y, 2);
+    if (minSquareDistance == -1 || minSquareDistance > sqDist) {
+      minSquareDistance = sqDist;
+      insertIndex = i1;
+    }
+  }
+
+  console.log(poly.points);
+  console.log(insertIndex);
+
+  poly.points.splice(insertIndex, 0, {x: x, y: y});
+
+  console.log(poly.points);
+}
+
+function draw() {
   console.log('draw')
-  ctx.clearRect(0,0,cw,ch);
+  ctx.clearRect(0, 0, cw, ch);
   define();
 }
 
@@ -52,8 +87,8 @@ function define(){
     for(var i=0; i < poly.points.length; i++){
         // draw rectangle at the points
         ctx.rect(
-            poly.points[i].x + poly.x - dotSize / 2,
-            poly.points[i].y + poly.y - dotSize / 2,
+            poly.points[i].x - dotSize / 2,
+            poly.points[i].y - dotSize / 2,
             dotSize,
             dotSize
         );
@@ -67,11 +102,11 @@ function define(){
     // draw polygon
     ctx.beginPath();  // need this for clearRect to work
     
-    ctx.moveTo(poly.points[0].x+poly.x,poly.points[0].y+poly.y);
+    ctx.moveTo(poly.points[0].x,poly.points[0].y);
     for (var i=0; i<poly.points.length; i++) {
-      ctx.lineTo(poly.points[i].x+poly.x,poly.points[i].y+poly.y);
+      ctx.lineTo(poly.points[i].x,poly.points[i].y);
     }
-    ctx.lineTo(poly.points[0].x+poly.x, poly.points[0].y+poly.y);
+    ctx.lineTo(poly.points[0].x, poly.points[0].y);
 
     // ctx.fillStyle='skyblue';
     ctx.fillStyle = "rgba(180, 240, 245, 0.5)";
@@ -85,8 +120,8 @@ function define(){
 }
 
 
-function handleMouseDown(e){
-  console.log('handleMouseDown start: isDown ' + isDown);
+function handleMouseDown(e) {
+  console.log('handleMouseDown start: isDown=' + isDown);
   // tell the browser we're handling this event
   e.preventDefault();
   e.stopPropagation();
@@ -95,21 +130,31 @@ function handleMouseDown(e){
   startY=parseInt(e.clientY - offsetY);
 
   // Put your mousedown stuff here
-//   define();
-
-  polyPointIndex = getPointClicked(startX, startY);
-  if (polyPointIndex != null){
-    isDown=true;
+  if (e.button == 0) {  // left click
+    polyPointIndex = getPointClicked(startX, startY);
+    if (polyPointIndex != null){
+      isDown=true;
+    }
+  } else if (e.button == 2) {  // right click
+    // either add or remove points
+    polyPointIndex = getPointClicked(startX, startY);
+    if (polyPointIndex != null) {
+      // right-click on a point -> remove it
+      removePoint(poly, polyPointIndex);
+    } else {
+      addPoint(poly, startX, startY);
+    }
+    draw();
   }
-  console.log('handleMouseDown end: isDown ' + isDown);
+  console.log('handleMouseDown end: isDown=' + isDown);
 }
 
 function getPointClicked(x, y) {
   for (var i=0; i < poly.points.length; i++) {
-    const x1 = poly.x + poly.points[i].x - dotSize/2;
-    const x2 = poly.x + poly.points[i].x + dotSize/2;
-    const y1 = poly.y + poly.points[i].y - dotSize/2;
-    const y2 = poly.y + poly.points[i].y + dotSize/2;
+    const x1 = poly.points[i].x - dotSize/2;
+    const x2 = poly.points[i].x + dotSize/2;
+    const y1 = poly.points[i].y - dotSize/2;
+    const y2 = poly.points[i].y + dotSize/2;
     if (x1 <= x && x2 >= x && y1 <= y && y2 >= y) {
       return i;
     }
@@ -119,25 +164,25 @@ function getPointClicked(x, y) {
 }
 
 function handleMouseUp(e){
-    console.log('handleMouseUp start: isDown ' + isDown);
+  console.log('handleMouseUp start: isDown=' + isDown);
 
   // tell the browser we're handling this event
   e.preventDefault();
   e.stopPropagation();
 
-  mouseX=parseInt(e.clientX-offsetX);
-  mouseY=parseInt(e.clientY-offsetY);
+  mouseX = parseInt(e.clientX-offsetX);
+  mouseY = parseInt(e.clientY-offsetY);
 
   draw();
 
   // Put your mouseup stuff here
-  isDown=false;
+  isDown = false;
 
-  console.log('handleMouseUp end: isDown ' + isDown);
+  console.log('handleMouseUp end: isDown=' + isDown);
 }
 
 function handleMouseOut(e){
-    console.log('handleMouseOut start: isDown ' + isDown);
+    console.log('handleMouseOut start: isDown=' + isDown);
 
   // tell the browser we're handling this event
   e.preventDefault();
@@ -149,11 +194,11 @@ function handleMouseOut(e){
   // Put your mouseOut stuff here
   isDown=false;
 
-  console.log('handleMouseOut end: isDown ' + isDown);
+  console.log('handleMouseOut end: isDown=' + isDown);
 }
 
 function handleMouseMove(e){
-    console.log('handleMouseMove start: isDown ' + isDown);
+    console.log('handleMouseMove start: isDown=' + isDown);
 
   if(!isDown){return;}
 
@@ -170,12 +215,10 @@ function handleMouseMove(e){
   startX=mouseX;
   startY=mouseY;
 
-  // poly.x+=dx;
-  // poly.y+=dy;
   poly.points[polyPointIndex].x += dx;
   poly.points[polyPointIndex].y += dy;
 
   draw();
 
-  console.log('handleMouseMove end: isDown ' + isDown);
+  console.log('handleMouseMove end: isDown=' + isDown);
 }
