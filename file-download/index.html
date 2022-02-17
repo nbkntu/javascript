@@ -1,9 +1,6 @@
 <html>
 
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-
-    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -11,6 +8,7 @@
     <h4>Click Download</h4>
     <button id="download-button" onclick="download();">Download</button>
     <button id="download-blob-button" onclick="downloadBlob();">Download Blob</button>
+    <button id="download-file-button" onclick="downloadFile();">Download File</button>
 
     <script>
         function download() {
@@ -40,6 +38,25 @@
             );
 
             const win = window.open(winUrl, "win");
+        }
+
+        function downloadFile() {
+            const test = {
+                a: 'number one',
+                b: 'number two'
+            };
+            const jsonTest = JSON.stringify(test, null, 2);
+
+            var a = window.document.createElement('a');
+            a.href = window.URL.createObjectURL(new Blob([jsonTest], {type: 'application/json'}));
+            a.download = 'test.json';
+
+            // Append anchor to body.
+            document.body.appendChild(a);
+            a.click();
+
+            // Remove anchor from body
+            document.body.removeChild(a);
         }
     </script>
 </body>
