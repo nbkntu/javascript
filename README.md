@@ -9,3 +9,5 @@ Right-click on the point to remove, else add a new point.
 Load image from local drive and display in canvas.
 Draw rectangle bounding box and make it resizable.
 
+# fiel-download
+Create a new page with content provided.
